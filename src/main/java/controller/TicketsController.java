@@ -23,6 +23,6 @@ public class TicketsController {
     @PostMapping("/new")
     public ResponseEntity<TicketResponse> createNewTicket(TicketCreateRequest ticketRequest){
         var ticketResponse = ticketService.createTicketFromRequest(ticketRequest);
-        return new ResponseEntity.ok();
+        return ResponseEntity.ok(ticketResponse);
     }
 }
