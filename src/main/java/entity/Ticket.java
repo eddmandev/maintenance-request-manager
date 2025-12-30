@@ -1,11 +1,18 @@
 package entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import model.TicketStatus;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "tickets")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

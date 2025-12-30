@@ -40,7 +40,7 @@ security:
 
 
 paths:
-  /ticket:
+  /tickets:
     post:
       summary: Create a new ticket
       security:

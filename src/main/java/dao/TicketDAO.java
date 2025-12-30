@@ -1,7 +1,9 @@
 package dao;
 
+import entity.Ticket;
+
 public interface TicketDAO {
-    void createTicket();
+    void saveTicket(Ticket ticket);
 
     void closeTicket();
 
