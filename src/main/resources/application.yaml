@@ -1,3 +1,12 @@
 spring:
   application:
     name: Maintenance Request Manager
+
+spring.datasource:
+  url: jdbc:postgresql://localhost:5432/ticket_system
+  username: ticket_maintenance_user
+  password: ${DB_PASSWORD}
+
+spring.jpa:
+  hibernate.ddl-auto: validate
+  show-sql: true

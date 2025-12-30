@@ -1,21 +1,12 @@
 package service;
 
-import dao.TicketDAO;
 import entity.Ticket;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
-@AllArgsConstructor
-public class TicketService {
+public interface TicketService {
 
-    private final TicketDAO ticketDAO;
+    Ticket createTicketFromRequest();
 
-    public Ticket createNewTicket(){
-        return null;
-    }
+    void closeTicket();
 
-    public Ticket updateTicket(){
-        return null;
-    }
+    void updateTicketStatus();
 }
