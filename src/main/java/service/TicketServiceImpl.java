@@ -24,13 +24,7 @@ public class TicketServiceImpl implements TicketService{
             throw new IllegalArgumentException();
         }
 
-        Ticket ticket = Ticket.builder()
-                .title(ticketRequest.getTitle())
-                .description(ticketRequest.getDescription())
-                .build();
 
-
-        ticketDAO.saveTicket(ticket);
         return null;
     }
 

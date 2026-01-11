@@ -11,6 +11,17 @@ components:
       bearerFormat: JWT
 
   schemas:
+    TicketElement:
+      type: object
+      required: [title, description, id]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        id:
+          type: string
+
     TicketCreateRequest:
       type: object
       required: [title, description]
@@ -35,16 +46,40 @@ components:
           type: string
           format: date-time
 
+    AttachmentListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/AttachmentResponse'
+
+    TicketStatus:
+      type: string
+      enum:
+        - NEW
+        - ACTIVE
+        - CLOSED
+
 security:
   - bearerAuth: []
 
 
 paths:
   /tickets:
+    get:
+      summary: Retrieve all tickets created by the authenticated user
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketListResponse'
+
     post:
       summary: Create a new ticket
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -58,3 +93,120 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+
+  /tickets/{id}:
+    get:
+      summary: Retrieve a single ticket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Ticket details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+
+    patch:
+      summary: Update or close a ticket
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdateRequest'
+      responses:
+        '200':
+          description: Ticket updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+
+
+  /tickets/{id}/update:
+    put:
+      summary: Update ticket status
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdateRequest'
+      responses:
+        '201':
+          description: Ticket updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+
+  /tickets/{id}/attachments:
+    post:
+      summary: Upload attachment to ticket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [ file ]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Attachment uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentResponse'
+
+  /attachments/{attachmentId}:
+    get:
+      summary: Download attachment
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: File stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
