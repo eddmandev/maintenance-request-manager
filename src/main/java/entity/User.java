@@ -20,14 +20,21 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
+    private String password;
+
     private boolean active;
 
+    @Column(name = "address_line")
     private String addressLine;
 
+    @Column(name = "address_line2")
     private String addressLine2;
 
+    @Column(name = "building_nr")
     private int buildingNr;
 
+    @Column(name = "apartment_nr")
     private int apartmentNr;
 
     @ManyToOne(fetch = FetchType.EAGER)

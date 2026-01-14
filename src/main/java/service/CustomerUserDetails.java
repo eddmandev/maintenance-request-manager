@@ -1,5 +1,7 @@
 package service;
 
+import entity.User;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -7,7 +9,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
-public class CustomerUserDetails implements UserDetails{
+@AllArgsConstructor
+public class CustomerUserDetails implements UserDetails {
+
+    private final User user;
 
     @Override
     public String getUsername() {
@@ -16,7 +21,7 @@ public class CustomerUserDetails implements UserDetails{
 
     @Override
     public String getPassword() {
-        return "";
+        return user.getPassword();
     }
 
     @Override
