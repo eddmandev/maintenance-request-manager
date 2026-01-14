@@ -2,13 +2,8 @@ package controller;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import dao.TicketDAO;
-import entity.Ticket;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import service.TicketService;
 
 @RestController
@@ -20,9 +15,17 @@ public class TicketsController {
         this.ticketService = ticketService;
     }
 
-    @PostMapping("/new")
+    @PostMapping
     public ResponseEntity<TicketResponse> createNewTicket(TicketCreateRequest ticketRequest){
         var ticketResponse = ticketService.createTicketFromRequest(ticketRequest);
         return ResponseEntity.ok(ticketResponse);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketResponse> getTicketInfo(@RequestParam String ticketId){
+
+        return null;
+    }
+
+
 }

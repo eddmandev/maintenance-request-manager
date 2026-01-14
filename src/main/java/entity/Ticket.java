@@ -1,16 +1,14 @@
 package entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import model.TicketStatus;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tickets")
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ticket {
@@ -27,9 +25,11 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private LocalDateTime createdAt;
 }

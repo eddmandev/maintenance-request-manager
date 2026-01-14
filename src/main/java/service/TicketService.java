@@ -2,12 +2,13 @@ package service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
+import model.TicketStatus;
 
 public interface TicketService {
 
     TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest);
 
-    void closeTicket();
+    void updateTicketStatus(TicketStatus status);
 
-    void updateTicketStatus();
+    TicketResponse getTicketDetails(String id);
 }

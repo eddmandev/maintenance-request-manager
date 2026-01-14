@@ -2,39 +2,36 @@ package service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import dao.TicketDAO;
-import entity.Ticket;
 import mapper.TicketApiMapper;
+import model.TicketStatus;
 import org.springframework.stereotype.Service;
+import repository.TicketRepository;
 
 @Service
 public class TicketServiceImpl implements TicketService{
 
-    private final TicketDAO ticketDAO;
     private final TicketApiMapper mapper;
+    private final TicketRepository ticketRepository;
 
-    public TicketServiceImpl(TicketDAO ticketDAO, TicketApiMapper mapper){
-        this.ticketDAO = ticketDAO;
+    public TicketServiceImpl(TicketRepository ticketRepository, TicketApiMapper mapper){
+        this.ticketRepository = ticketRepository;
         this.mapper = mapper;
     }
 
     @Override
     public TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest) {
-        if (ticketRequest.getTitle()==null || ticketRequest.getDescription()==null){
-            throw new IllegalArgumentException();
-        }
+        var ticketEntity = mapper.mapToEntity(ticketRequest);
+        ticketRepository.save(ticketEntity);
+        return mapper.mapToResponse(ticketEntity);
+    }
 
+    @Override
+    public void updateTicketStatus(TicketStatus status) {
 
+    }
+
+    @Override
+    public TicketResponse getTicketDetails(String id) {
         return null;
-    }
-
-    @Override
-    public void closeTicket() {
-
-    }
-
-    @Override
-    public void updateTicketStatus() {
-
     }
 }
