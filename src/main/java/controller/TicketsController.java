@@ -23,9 +23,6 @@ public class TicketsController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TicketResponse> getTicketInfo(@RequestParam String ticketId){
-
-        return null;
+        return ResponseEntity.ok(ticketService.getTicketDetails(ticketId));
     }
-
-
 }
