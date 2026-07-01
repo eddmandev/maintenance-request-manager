@@ -1,4 +1,4 @@
-package model;
+package role.model;
 
 public enum RoleName {
     ROLE_ADMIN,

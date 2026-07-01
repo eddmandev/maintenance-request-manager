@@ -1,8 +1,9 @@
-package entity;
+package ticket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import model.TicketStatus;
+import ticket.model.TicketStatus;
+import user.entity.User;
 
 import java.time.LocalDateTime;
 

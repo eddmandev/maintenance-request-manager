@@ -1,8 +1,9 @@
-package service;
+package authentication;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import user.service.UserDetails;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;

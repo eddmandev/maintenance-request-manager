@@ -1,7 +1,8 @@
-package entity;
+package attachment.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ticket.entity.Ticket;
 
 import java.time.LocalDateTime;
 

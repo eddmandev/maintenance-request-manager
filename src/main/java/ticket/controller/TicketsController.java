@@ -1,10 +1,10 @@
-package controller;
+package ticket.controller;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import service.TicketService;
+import ticket.service.TicketService;
 
 @RestController
 @RequestMapping("/tickets")

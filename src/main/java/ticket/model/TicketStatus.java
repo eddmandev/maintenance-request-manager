@@ -1,4 +1,4 @@
-package model;
+package ticket.model;
 
 public enum TicketStatus {
     NEW,

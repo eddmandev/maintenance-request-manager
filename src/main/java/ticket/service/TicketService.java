@@ -1,8 +1,8 @@
-package service;
+package ticket.service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import model.TicketStatus;
+import ticket.model.TicketStatus;
 
 public interface TicketService {
 

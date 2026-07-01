@@ -1,9 +1,9 @@
-package entity;
+package role.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import model.RoleName;
+import role.model.RoleName;
 
 @Entity
 @Table(name = "roles")

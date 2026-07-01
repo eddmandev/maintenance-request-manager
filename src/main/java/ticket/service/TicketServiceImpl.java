@@ -1,14 +1,14 @@
-package service;
+package ticket.service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import mapper.TicketApiMapper;
-import model.TicketStatus;
+import ticket.mapper.TicketApiMapper;
+import ticket.model.TicketStatus;
 import org.springframework.stereotype.Service;
-import repository.TicketRepository;
+import ticket.repository.TicketRepository;
 
 @Service
-public class TicketServiceImpl implements TicketService{
+public class TicketServiceImpl implements TicketService {
 
     private final TicketApiMapper mapper;
     private final TicketRepository ticketRepository;
