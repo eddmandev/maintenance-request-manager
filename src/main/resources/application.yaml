@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/maintenance_db
     username: postgres
-    password: your_password_here
+    password: notapassword
   jpa:
     hibernate:
       ddl-auto: validate
