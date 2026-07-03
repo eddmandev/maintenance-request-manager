@@ -3,8 +3,8 @@ package exception;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class UserNotFoundExceptrion extends Exception {
-    public UserNotFoundExceptrion(String message){
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message){
         super(message);
     }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import repository.UserRepository;
+import service.UserService;
 
 import java.util.Objects;
 
@@ -12,19 +13,16 @@ import java.util.Objects;
 @RequestMapping
 @RequiredArgsConstructor
 public class UserController {
-    private final UserRepository userRepository;
+
+    private final UserService userService;
 
     @PostMapping("/register")
     public User registerUser(@RequestBody User user){
-        return userRepository.save(user);
+        return userService.registerUser(user);
     }
 
     @PostMapping("/login")
-    public User loginUser(@RequestBody User user){
-        var foundUser = userRepository.findByUsername(user.getEmail());
-        if (Objects.isNull(foundUser)){
-            throw new UsernameNotFoundException("User by the email " + user.getEmail() + " was not found");
-        }
-        return null;
+    public String loginUser(@RequestBody User user){
+        return userService.verify(user);
     }
 }

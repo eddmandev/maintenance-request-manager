@@ -9,5 +9,4 @@ class MaintenanceRequestManagerApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
