@@ -4,6 +4,9 @@ import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
 import ticket.mapper.TicketApiMapper;
 import ticket.model.TicketStatus;
+import entity.Ticket;
+import mapper.TicketApiMapper;
+import model.TicketStatus;
 import org.springframework.stereotype.Service;
 import ticket.repository.TicketRepository;
 
@@ -26,13 +29,15 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public void updateTicketStatus(TicketStatus status) {
+    public TicketResponse updateTicketStatus(Ticket ticket, TicketStatus status) {
 
+        return null;
     }
 
     @Override
     public TicketResponse getTicketDetails(String id) {
-        return null;
+        var ticket = ticketRepository.findById(Long.parseLong(id));
+        return mapper.mapToResponse(ticket);
     }
 
 }
