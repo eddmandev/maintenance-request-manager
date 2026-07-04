@@ -1,4 +1,4 @@
-package service;
+package user.service;
 
 import authentication.JwtService;
 import exception.UserNotFoundException;

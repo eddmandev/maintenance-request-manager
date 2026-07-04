@@ -3,7 +3,6 @@ package ticket.entity;
 import attachment.entity.Attachment;
 import jakarta.persistence.*;
 import lombok.*;
-import ticket.model.TicketStatus;
 import user.entity.User;
 
 import java.time.LocalDateTime;

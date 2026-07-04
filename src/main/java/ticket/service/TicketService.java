@@ -2,14 +2,13 @@ package ticket.service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import ticket.entity.Ticket;
-import ticket.model.TicketStatus;
+import api.model.TicketStatusUpdateRequest;
 
 public interface TicketService {
 
     TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest);
 
-    TicketResponse updateTicketStatus(Ticket ticket, TicketStatus status);
+    TicketResponse updateTicketStatus(TicketStatusUpdateRequest ticketUpdateStatusRequest, long id) throws Exception;
 
     TicketResponse getTicketDetails(String id);
 }

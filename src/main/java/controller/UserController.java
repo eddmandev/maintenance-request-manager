@@ -2,10 +2,8 @@ package controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import service.UserService;
+import user.service.UserService;
 import user.entity.User;
-
-import java.util.Objects;
 
 @RestController
 @RequestMapping
