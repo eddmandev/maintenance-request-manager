@@ -1,11 +1,9 @@
 package controller;
 
-import entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import repository.UserRepository;
 import service.UserService;
+import user.entity.User;
 
 import java.util.Objects;
 

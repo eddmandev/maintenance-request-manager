@@ -1,15 +1,14 @@
 package service;
 
-import entity.User;
+import authentication.JwtService;
 import exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import repository.UserRepository;
-
-import java.util.Objects;
+import user.entity.User;
+import user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor

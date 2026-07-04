@@ -1,7 +1,6 @@
 package user.service;
 
 import user.entity.User;
-import entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 
 @Component
@@ -21,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().getRoleName().name()));
+        return Collections.singleton(new SimpleGrantedAuthority(user.getRole().toString()));
     }
 
     @Override

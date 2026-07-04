@@ -3,5 +3,5 @@ package ticket.model;
 public enum TicketStatus {
     NEW,
     ACTIVE,
-    CLOSED;
+    CLOSED, OPEN, COMPLETED;
 }

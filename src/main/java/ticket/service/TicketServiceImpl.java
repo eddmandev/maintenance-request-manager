@@ -2,11 +2,9 @@ package ticket.service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
+import ticket.entity.Ticket;
 import ticket.mapper.TicketApiMapper;
 import ticket.model.TicketStatus;
-import entity.Ticket;
-import mapper.TicketApiMapper;
-import model.TicketStatus;
 import org.springframework.stereotype.Service;
 import ticket.repository.TicketRepository;
 

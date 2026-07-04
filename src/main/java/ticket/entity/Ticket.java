@@ -1,36 +1,93 @@
 package ticket.entity;
 
+import attachment.entity.Attachment;
 import jakarta.persistence.*;
 import lombok.*;
 import ticket.model.TicketStatus;
 import user.entity.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "tickets")
-@Data
+@Table(
+        name = "tickets",
+        indexes = {
+                @Index(name = "idx_ticket_user", columnList = "user_id"),
+                @Index(name = "idx_ticket_worker", columnList = "assigned_worker_id")
+        }
+)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Ticket {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private TicketStatus status;
+    @Column(nullable = false)
+    private TicketStatus status = TicketStatus.OPEN;
 
-    @Column(name = "created_at")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TicketPriority priority = TicketPriority.MEDIUM;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_worker_id")
+    private User assignedWorker;
+
+    @OneToMany(
+            mappedBy = "ticket",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Attachment> attachments = new ArrayList<>();
+
+    @PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+
+        if (status == null) {
+            status = TicketStatus.OPEN;
+        }
+
+        if (priority == null) {
+            priority = TicketPriority.MEDIUM;
+        }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
+
+        if (status == TicketStatus.COMPLETED && completedAt == null) {
+            completedAt = LocalDateTime.now();
+        }
+    }
 
 }

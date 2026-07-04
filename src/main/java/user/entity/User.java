@@ -8,6 +8,7 @@ import lombok.Data;
 @Table(name ="users")
 @Data
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,9 +42,9 @@ public class User {
     @Column(name = "apartment_nr")
     private int apartmentNr;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    private boolean isEnabled;
+    private boolean enabled;
 }

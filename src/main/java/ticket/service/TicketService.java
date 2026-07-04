@@ -2,8 +2,7 @@ package ticket.service;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
-import entity.Ticket;
-import model.TicketStatus;
+import ticket.entity.Ticket;
 import ticket.model.TicketStatus;
 
 public interface TicketService {

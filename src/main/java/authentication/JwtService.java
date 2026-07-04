@@ -1,30 +1,28 @@
 package authentication;
 
-import entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import user.service.UserDetails;
+import user.entity.User;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
 @Service
-@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("{api-secrets}")
-    private final String SECRET_KEY;
+    @Value("${api-secrets}")
+    private String secretKey;
 
     public String generateToken(User user) {
         return Jwts.builder()
                 .subject(user.getUsername())
+                .claim("role", user.getRole())
                 .issuer("EOC")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 60000))
@@ -51,6 +49,11 @@ public class JwtService {
         }
     }
 
+    public String extractRole(String token){
+        return extractClaim(token,
+                claims -> claims.get("role", String.class));
+    }
+
     public <T> T extractClaim(
             String token,
             Function<Claims, T> claimsResolver
@@ -72,7 +75,7 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
