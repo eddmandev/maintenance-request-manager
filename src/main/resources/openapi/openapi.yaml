@@ -4,6 +4,46 @@ info:
   version: 1.0.0
 
 paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Invalid username or password
   /tickets:
     get:
       operationId: getTickets
@@ -214,14 +254,95 @@ components:
       bearerFormat: JWT
 
   schemas:
+    AuthenticationRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: john.doe
+        password:
+          type: string
+          format: password
+          example: myPassword123
+
+    RegisterRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - username
+        - email
+        - password
+        - role
+      properties:
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          example: MySecurePassword123
+        addressLine:
+          type: string
+          example: Main Street
+        addressLine2:
+          type: string
+          example: Building A
+        buildingNr:
+          type: integer
+          example: 15
+        apartmentNr:
+          type: integer
+          example: 7
+        role:
+          $ref: '#/components/schemas/Role'
+
+    Role:
+      type: string
+      enum:
+        - USER
+        - WORKER
+        - ADMIN
+
+    AuthenticationResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: JWT access token
+          example: eyJhbGciOiJIUzI1NiJ9...
+
     TicketCreateRequest:
       type: object
-      required: [title, description]
+      required:
+        - title
+        - description
+        - category
+        - type
       properties:
         title:
           type: string
         description:
           type: string
+        category:
+          $ref: '#/components/schemas/TicketCategory'
+        type:
+          $ref: '#/components/schemas/TicketType'
 
     TicketStatusUpdateRequest:
       type: object
@@ -238,6 +359,10 @@ components:
           type: string
         description:
           type: string
+        category:
+          $ref: '#/components/schemas/TicketCategory'
+        type:
+          $ref: '#/components/schemas/TicketType'
 
     TicketUpdatePriorityRequest:
       type: object
@@ -266,6 +391,10 @@ components:
           type: string
         description:
           type: string
+        category:
+          $ref: '#/components/schemas/TicketCategory'
+        type:
+          $ref: '#/components/schemas/TicketType'
         status:
           $ref: '#/components/schemas/TicketStatus'
         priority:
@@ -273,6 +402,31 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    TicketCategory:
+      type: string
+      enum:
+        - PLUMBING
+        - ELECTRICAL
+        - HVAC
+        - CARPENTRY
+        - APPLIANCE
+        - CLEANING
+        - OTHER
+
+    TicketType:
+      type: string
+      enum:
+        - WATER_LEAK
+        - CLOGGED_DRAIN
+        - HEATING_FAILURE
+        - POWER_OUTAGE
+        - LIGHT_FIXTURE
+        - BROKEN_WINDOW
+        - BROKEN_DOOR
+        - APPLIANCE_REPAIR
+        - CLEANING_REQUEST
+        - OTHER
 
     AttachmentResponse:
       type: object
@@ -294,9 +448,11 @@ components:
     TicketStatus:
       type: string
       enum:
-        - NEW
-        - ACTIVE
-        - CLOSED
+        - OPEN
+        - ASSIGNED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
 
     TicketPriority:
       type: string
@@ -304,6 +460,7 @@ components:
         - LOW
         - MEDIUM
         - HIGH
+        - URGENT
 
     TicketListResponse:
       type: array

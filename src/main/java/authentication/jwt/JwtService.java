@@ -1,4 +1,4 @@
-package authentication;
+package authentication.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,7 +25,7 @@ public class JwtService {
                 .claim("role", user.getRole())
                 .issuer("EOC")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 60000))
+                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))
                 .signWith(getSigningKey())
                 .compact();
     }

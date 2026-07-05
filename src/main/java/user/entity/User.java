@@ -1,5 +1,6 @@
 package user.entity;
 
+import lombok.Builder;
 import role.entity.Role;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 @Entity
 @Table(name ="users")
 @Data
+@Builder
 public class User {
 
     @Id

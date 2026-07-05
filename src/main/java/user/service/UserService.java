@@ -1,6 +1,6 @@
 package user.service;
 
-import authentication.JwtService;
+import authentication.jwt.JwtService;
 import exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

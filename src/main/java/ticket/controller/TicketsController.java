@@ -4,6 +4,7 @@ import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ticket.exception.TicketNotFoundException;
 import ticket.service.TicketService;
 
 @RestController
@@ -22,7 +23,7 @@ public class TicketsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TicketResponse> getTicketInfo(@RequestParam String ticketId){
+    public ResponseEntity<TicketResponse> getTicketInfo(@RequestParam long ticketId) {
         return ResponseEntity.ok(ticketService.getTicketDetails(ticketId));
     }
 }

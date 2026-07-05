@@ -59,6 +59,14 @@ public class Ticket {
     @JoinColumn(name = "assigned_worker_id")
     private User assignedWorker;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TicketCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TicketType type;
+
     @OneToMany(
             mappedBy = "ticket",
             cascade = CascadeType.ALL,

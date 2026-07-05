@@ -1,4 +1,4 @@
-package authentication;
+package authentication.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

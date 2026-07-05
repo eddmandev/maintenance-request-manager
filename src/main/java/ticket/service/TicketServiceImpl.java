@@ -1,57 +1,90 @@
 package ticket.service;
 
-import api.model.TicketCreateRequest;
-import api.model.TicketResponse;
-import api.model.TicketStatus;
-import api.model.TicketStatusUpdateRequest;
+import api.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ticket.entity.Ticket;
+import ticket.exception.SameTicketPriorityException;
+import ticket.exception.TicketClosedException;
 import ticket.exception.TicketNotFoundException;
-import ticket.exception.UnchangedTicketStatusException;
+import ticket.exception.SameTicketStatusException;
 import ticket.mapper.TicketApiMapper;
 import ticket.repository.TicketRepository;
 
 import java.util.Objects;
 
+
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
-    private final TicketApiMapper mapper;
     private final TicketRepository ticketRepository;
-
+    private final TicketApiMapper mapper;
 
     @Override
     public TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest) {
-        var ticketEntity = mapper.mapToEntity(ticketRequest);
-        ticketRepository.save(ticketEntity);
-        return mapper.mapToResponse(ticketEntity);
-    }
-
-    @Override
-    public TicketResponse updateTicketStatus(TicketStatusUpdateRequest ticketUpdateRequest, long id) throws TicketNotFoundException, UnchangedTicketStatusException {
-        var ticket = ticketRepository.findById(id);
-        if (Objects.isNull(ticket)){
-            throw new TicketNotFoundException("Couldn't find ticket of id: " + id);
-        }
-        if (isSameStatus(ticket, ticketUpdateRequest.getStatus())){
-            throw new UnchangedTicketStatusException("The status of the ticket is the same.");
-        }
-
-        var ticketStatus = mapper.mapTicketStatusToEntity(ticketUpdateRequest.getStatus());
-        ticket.setStatus(ticketStatus);
-        ticketRepository.save(ticket);
+        Ticket ticket = mapper.mapToEntity(ticketRequest);
+        ticket = ticketRepository.save(ticket);
         return mapper.mapToResponse(ticket);
     }
 
     @Override
-    public TicketResponse getTicketDetails(String id) {
-        var ticket = ticketRepository.findById(Long.parseLong(id));
+    public TicketResponse updateTicketStatus(TicketStatusUpdateRequest ticketUpdateRequest, long id)
+            throws TicketNotFoundException, SameTicketStatusException {
+
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException("Couldn't find ticket with id: " + id));
+
+        var ticketStatusRequest = ticketUpdateRequest.getStatus();
+
+        if (isSameStatus(ticket, ticketUpdateRequest.getStatus())) {
+            throw new SameTicketStatusException("The status of the ticket is already " + ticketUpdateRequest.getStatus());
+        }
+
+        if (ticketStatusRequest.equals(TicketStatus.COMPLETED) && !isTicketAssigned(ticket)){
+            throw new TicketClosedException("The ticket must be assigned for it to be completed.");
+        }
+
+        ticket.setStatus(mapper.mapTicketStatusToEntity(ticketStatusRequest));
+        ticket = ticketRepository.save(ticket);
         return mapper.mapToResponse(ticket);
     }
 
-    private boolean isSameStatus(Ticket ticket, TicketStatus ticketStatus){
-        return ticket.getStatus().equals(mapper.mapTicketStatusToEntity(ticketStatus));
+    @Override
+    public TicketResponse updateTicketPriority(TicketUpdatePriorityRequest ticketUpdatePriorityRequest, long id)
+            throws TicketNotFoundException, SameTicketPriorityException {
+
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException("Couldn't find ticket with id: " + id));
+
+        if (isSamePriority(ticket, ticketUpdatePriorityRequest.getPriority())) {
+            throw new SameTicketPriorityException("The priority of the ticket is already " + ticketUpdatePriorityRequest.getPriority());
+        }
+        ticket.setPriority(mapper.mapTicketPriorityToEntity(ticketUpdatePriorityRequest.getPriority()));
+        ticket = ticketRepository.save(ticket);
+
+        return mapper.mapToResponse(ticket);
+    }
+
+    @Override
+    public TicketResponse getTicketDetails(long id) throws TicketNotFoundException {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException("Couldn't find ticket with id: " + id));
+        return mapper.mapToResponse(ticket);
+    }
+
+    private boolean isSameStatus(Ticket ticket, api.model.TicketStatus status) {
+        return ticket.getStatus().equals(mapper.mapTicketStatusToEntity(status));
+    }
+
+    private boolean isSamePriority(Ticket ticket, api.model.TicketPriority priority) {
+        return ticket.getPriority().equals(mapper.mapTicketPriorityToEntity(priority));
+    }
+
+    private boolean isTicketAssigned(Ticket ticket){
+        return !Objects.isNull(ticket.getAssignedWorker());
     }
 }
