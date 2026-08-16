@@ -467,6 +467,28 @@ components:
       items:
         $ref: '#/components/schemas/TicketResponse'
 
+    WorkerCreateRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - username
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
 security:
   - bearerAuth: []
 
