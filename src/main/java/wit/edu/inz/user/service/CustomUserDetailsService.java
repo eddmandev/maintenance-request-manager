@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import wit.edu.inz.user.entity.User;
 import wit.edu.inz.user.repository.UserRepository;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;

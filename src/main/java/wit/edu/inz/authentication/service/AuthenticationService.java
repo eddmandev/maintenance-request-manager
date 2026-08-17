@@ -31,6 +31,9 @@ public class AuthenticationService {
 
         User user = userMapper.mapToEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
+        user.setEnabled(true);
+        user.setActive(true);
         user = userRepository.save(user);
 
         AuthenticationResponse response = new AuthenticationResponse();

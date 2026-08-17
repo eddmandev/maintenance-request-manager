@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
                         .timestamp(LocalDateTime.now())
                         .status(500)
                         .error("Internal Server Error")
-                        .message("An unexpected error occurred.")
+                        .message(ex.getMessage())
                         .path(request.getRequestURI())
                         .build());
     }
