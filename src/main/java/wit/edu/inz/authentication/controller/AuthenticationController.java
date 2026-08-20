@@ -38,4 +38,9 @@ public class AuthenticationController {
 
         return authService.createWorker(request);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return ResponseEntity.noContent().build();
+    }
 }

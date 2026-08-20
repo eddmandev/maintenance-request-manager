@@ -6,6 +6,7 @@ info:
 paths:
   /register:
     post:
+      security: []
       tags:
         - Authentication
       summary: Register a new user
@@ -25,6 +26,7 @@ paths:
                 $ref: '#/components/schemas/AuthenticationResponse'
   /login:
     post:
+      security: []
       tags:
         - Authentication
       summary: Authenticate user
@@ -97,6 +99,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+        '404':
+          description: Ticket not found
 
     patch:
       summary: Update or close a ticket
@@ -129,7 +133,7 @@ paths:
       operationId: createAttachment
       summary: Upload attachment to ticket
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - name: id
           in: path
@@ -143,7 +147,8 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [ file ]
+              required:
+                - file
               properties:
                 file:
                   type: string
@@ -155,6 +160,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentResponse'
+    get:
+      operationId: getAttachments
+      summary: Get attachments related to the ticket
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Fetched attachments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentResponse'
+
+  /tickets/attachments/{attachmentId}:
+    get:
+      operationId: downloadAttachment
+      summary: Download attachment
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Attachment file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
 
   /tickets/{id}/status:
     patch:
@@ -187,6 +235,37 @@ paths:
         '404':
           description: Ticket not found
 
+  /tickets/{id}/priority:
+    patch:
+      operationId: updateTicketPriority
+      summary: Update the priority of a ticket
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdatePriorityRequest'
+      responses:
+        '200':
+          description: Ticket priority updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+        '400':
+          description: Invalid priority provided
+        '404':
+          description: Ticket not found
+
   /tickets/{id}/assign:
     patch:
       operationId: assignTicket
@@ -214,37 +293,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
         '400':
-          description: Invalid status provided
+          description: Invalid assignment
         '404':
           description: Ticket not found
-
-
-  /attachments/{attachmentId}:
-    get:
-      operationId: getAttachment
-      summary: Download attachment
-      security:
-        - bearerAuth: [ ]
-      parameters:
-        - name: attachmentId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: File stream
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Invalid attachment
-        '404':
-          description: Ticket not found
-
 
 components:
   securitySchemes:
@@ -276,7 +327,6 @@ components:
         - username
         - email
         - password
-        - role
       properties:
         firstName:
           type: string
@@ -307,8 +357,6 @@ components:
         apartmentNr:
           type: integer
           example: 7
-        role:
-          $ref: '#/components/schemas/Role'
 
     Role:
       type: string
@@ -375,22 +423,34 @@ components:
     TicketAssignmentRequest:
       type: object
       required:
-        - assignedUserId
+        - assignedWorkerId
       properties:
-        assignedUserId:
+        assignedWorkerId:
           type: integer
           format: int64
 
     TicketResponse:
       type: object
+      required:
+        - id
+        - title
+        - description
+        - category
+        - type
+        - status
+        - priority
+        - createdAt
       properties:
         id:
           type: integer
           format: int64
+          example: 1
         title:
           type: string
+          example: "Leaking pipe in bathroom"
         description:
           type: string
+          example: "There is a constant leak underneath the bathroom sink."
         category:
           $ref: '#/components/schemas/TicketCategory'
         type:
@@ -402,6 +462,25 @@ components:
         createdAt:
           type: string
           format: date-time
+          example: "2026-08-19T14:30:00"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-08-19T15:45:00"
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        createdById:
+          type: integer
+          format: int64
+          example: 5
+        assignedWorkerId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 12
 
     TicketCategory:
       type: string
@@ -428,23 +507,6 @@ components:
         - CLEANING_REQUEST
         - OTHER
 
-    AttachmentResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        filename:
-          type: string
-        contentType:
-          type: string
-        size:
-          type: integer
-          format: int64
-        uploadedAt:
-          type: string
-          format: date-time
-
     TicketStatus:
       type: string
       enum:
@@ -466,6 +528,29 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/TicketResponse'
+
+    AttachmentResponse:
+      type: object
+      required:
+        - id
+        - filename
+        - contentType
+        - size
+        - uploadedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+        filename:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+          format: int64
+        uploadedAt:
+          type: string
+          format: date-time
 
     WorkerCreateRequest:
       type: object

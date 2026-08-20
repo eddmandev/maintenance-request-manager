@@ -1,8 +1,9 @@
 package wit.edu.inz.ticket.entity;
 
-import wit.edu.inz.attachment.entity.Attachment;
 import jakarta.persistence.*;
 import lombok.*;
+import wit.edu.inz.attachment.entity.Attachment;
+import wit.edu.inz.comment.entity.Comment;
 import wit.edu.inz.user.entity.User;
 
 import java.time.LocalDateTime;
@@ -72,6 +73,7 @@ public class Ticket {
     private Ticket parentTicket;
 
     @OneToMany(mappedBy = "parentTicket")
+    @Builder.Default
     private List<Ticket> followUps = new ArrayList<>();
 
     @OneToMany(
@@ -79,7 +81,16 @@ public class Ticket {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     private List<Attachment> attachments = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "ticket",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {
@@ -103,5 +114,4 @@ public class Ticket {
             completedAt = LocalDateTime.now();
         }
     }
-
 }

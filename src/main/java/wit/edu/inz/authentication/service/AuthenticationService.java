@@ -60,6 +60,7 @@ public class AuthenticationService {
         response.setToken(jwtService.generateToken(user));
         return response;
     }
+
     public AuthenticationResponse createWorker(
             WorkerCreateRequest request) {
 
@@ -78,5 +79,4 @@ public class AuthenticationService {
         authResponse.setToken(jwtService.generateToken(worker));
         return authResponse;
     }
-
 }
