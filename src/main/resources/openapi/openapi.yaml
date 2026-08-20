@@ -279,12 +279,6 @@ paths:
           schema:
             type: integer
             format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TicketAssignmentRequest'
       responses:
         200:
           description: Ticket response
@@ -419,15 +413,6 @@ components:
       properties:
         priority:
           $ref: '#/components/schemas/TicketPriority'
-
-    TicketAssignmentRequest:
-      type: object
-      required:
-        - assignedWorkerId
-      properties:
-        assignedWorkerId:
-          type: integer
-          format: int64
 
     TicketResponse:
       type: object

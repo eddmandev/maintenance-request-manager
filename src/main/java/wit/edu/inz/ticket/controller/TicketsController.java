@@ -2,10 +2,13 @@ package wit.edu.inz.ticket.controller;
 
 import api.model.TicketCreateRequest;
 import api.model.TicketResponse;
+import api.model.TicketStatusUpdateRequest;
+import api.model.TicketUpdatePriorityRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import wit.edu.inz.ticket.service.TicketService;
@@ -50,5 +53,36 @@ public class TicketsController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TicketResponse> updateTicketStatus(
+            @PathVariable Long id,
+            @RequestBody @Valid TicketStatusUpdateRequest request) {
+
+        return ResponseEntity.ok(
+                ticketService.updateTicketStatus(request, id)
+        );
+    }
+
+    @PatchMapping("/{id}/priority")
+    public ResponseEntity<TicketResponse> updateTicketPriority(
+            @PathVariable Long id,
+            @RequestBody @Valid TicketUpdatePriorityRequest request) {
+
+        return ResponseEntity.ok(
+                ticketService.updateTicketPriority(request, id)
+        );
+    }
+
+    @PatchMapping("/{id}/assign")
+    @PreAuthorize("hasRole('WORKER')")
+    public ResponseEntity<TicketResponse> assignWorker(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                ticketService.assignWorker(id, authentication.getName())
+        );
     }
 }

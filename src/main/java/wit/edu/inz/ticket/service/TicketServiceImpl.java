@@ -4,7 +4,9 @@ import api.model.*;
 import wit.edu.inz.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import wit.edu.inz.role.entity.Role;
 import wit.edu.inz.ticket.entity.Ticket;
+import wit.edu.inz.ticket.entity.TicketPriority;
 import wit.edu.inz.ticket.entity.TicketStatus;
 import wit.edu.inz.ticket.exception.SameTicketPriorityException;
 import wit.edu.inz.ticket.exception.TicketNotFoundException;
@@ -15,7 +17,6 @@ import wit.edu.inz.user.entity.User;
 import wit.edu.inz.user.repository.UserRepository;
 
 import java.util.Objects;
-
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ public class TicketServiceImpl implements TicketService {
     public TicketResponse createTicketFromRequest(
             TicketCreateRequest request,
             String username) {
-
         User creator = userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found."));
@@ -45,59 +45,10 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketResponse updateTicketStatus(
-            TicketStatusUpdateRequest request,
-            long id) {
-
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket " + id + " was not found."));
-
-        wit.edu.inz.ticket.entity.TicketStatus newStatus =
-                mapper.mapTicketStatusToEntity(request.getStatus());
-
-        if (ticket.getStatus() == newStatus) {
-            throw new SameTicketStatusException(
-                    "Ticket already has this status.");
-        }
-
-        ticket.setStatus(newStatus);
-
-        return mapper.mapToResponse(ticketRepository.save(ticket));
-    }
-
-    @Override
-    public TicketResponse updateTicketPriority(TicketUpdatePriorityRequest ticketUpdatePriorityRequest, long id)
-            throws TicketNotFoundException, SameTicketPriorityException {
-
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException("Couldn't find ticket with id: " + id));
-
-        if (isSamePriority(ticket, ticketUpdatePriorityRequest.getPriority())) {
-            throw new SameTicketPriorityException("The priority of the ticket is already " + ticketUpdatePriorityRequest.getPriority());
-        }
-        ticket.setPriority(mapper.mapTicketPriorityToEntity(ticketUpdatePriorityRequest.getPriority()));
-        ticket = ticketRepository.save(ticket);
-
-        return mapper.mapToResponse(ticket);
-    }
-
-    @Override
-    public TicketResponse getTicketDetails(long id) throws TicketNotFoundException {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException("Couldn't find ticket with id: " + id));
-        return mapper.mapToResponse(ticket);
-    }
-
-    @Override
     public TicketResponse createFollowUpTicket(
             Long ticketId,
             TicketCreateRequest request,
             String username) {
-
         Ticket parentTicket = ticketRepository.findById(ticketId)
                 .orElseThrow(() ->
                         new TicketNotFoundException(
@@ -120,8 +71,95 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketResponse assignWorker(Long ticketId, String username) {
-        return null;
+    public TicketResponse updateTicketStatus(
+            TicketStatusUpdateRequest request,
+            long id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id '" + id + "' doesn't exist."
+                        ));
+
+        TicketStatus newStatus =
+                mapper.mapTicketStatusToEntity(request.getStatus());
+
+        if (ticket.getStatus() == newStatus) {
+            throw new SameTicketStatusException(
+                    "Ticket already has status " + newStatus + "."
+            );
+        }
+
+        ticket.setStatus(newStatus);
+
+        Ticket updated = ticketRepository.save(ticket);
+
+        return mapper.mapToResponse(updated);
+    }
+
+    @Override
+    public TicketResponse getTicketDetails(long id) throws TicketNotFoundException {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id '" + id + "' doesn't exist."
+                        ));
+
+        return mapper.mapToResponse(ticket);
+    }
+
+    @Override
+    public TicketResponse updateTicketPriority(
+            TicketUpdatePriorityRequest request,
+            long id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id '" + id + "' doesn't exist."
+                        ));
+
+        TicketPriority newPriority =
+                mapper.mapTicketPriorityToEntity(request.getPriority());
+
+        if (ticket.getPriority() == newPriority) {
+            throw new SameTicketPriorityException(
+                    "Ticket already has priority " + newPriority + "."
+            );
+        }
+        ticket.setPriority(newPriority);
+        Ticket updated = ticketRepository.save(ticket);
+
+        return mapper.mapToResponse(updated);
+    }
+
+    @Override
+    public TicketResponse assignWorker(
+            Long ticketId,
+            String username) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id '" + ticketId + "' doesn't exist."
+                        ));
+
+        User worker = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User with username '" + username + "' doesn't exist."
+                        ));
+
+        if (worker.getRole() != Role.WORKER) {
+            throw new RuntimeException(
+                    "Only maintenance workers can be assigned to tickets."
+            );
+        }
+        ticket.setAssignedWorker(worker);
+
+        if (ticket.getStatus() == TicketStatus.OPEN) {
+            ticket.setStatus(TicketStatus.ASSIGNED);
+        }
+        Ticket updated = ticketRepository.save(ticket);
+
+        return mapper.mapToResponse(updated);
     }
 
     private boolean isSameStatus(Ticket ticket, api.model.TicketStatus status) {
