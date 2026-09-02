@@ -19,4 +19,6 @@ public interface TicketService {
     TicketResponse createFollowUpTicket(Long ticketId, TicketCreateRequest request, String username);
 
     TicketResponse assignWorker(Long ticketId, String username);
+
+    TicketResponse editTicket(Long ticketId, TicketUpdateRequest updateRequest, String username);
 }

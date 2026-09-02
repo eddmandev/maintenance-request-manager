@@ -51,7 +51,7 @@ public class JwtService {
 
     public String extractRole(String token){
         return extractClaim(token,
-                claims -> claims.get("wit/edu/inz/role", String.class));
+                claims -> claims.get("role", String.class));
     }
 
     public <T> T extractClaim(

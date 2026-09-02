@@ -1,6 +1,7 @@
 package wit.edu.inz.ticket.service;
 
 import api.model.*;
+import org.springframework.security.access.AccessDeniedException;
 import wit.edu.inz.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -160,6 +161,42 @@ public class TicketServiceImpl implements TicketService {
         Ticket updated = ticketRepository.save(ticket);
 
         return mapper.mapToResponse(updated);
+    }
+
+    public TicketResponse editTicket(
+            Long ticketId,
+            TicketUpdateRequest request,
+            String username
+    ) {
+        var ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id: '" + ticketId + "' doesn't exist"
+                        )
+                );
+
+        if (!ticket.getCreatedBy().getUsername().equals(username)) {
+            throw new AccessDeniedException(
+                    "You are not allowed to edit this ticket"
+            );
+        }
+
+        ticket.setTitle(request.getTitle());
+        ticket.setDescription(request.getDescription());
+        ticket.setCategory(
+                mapper.mapTicketCategoryToEntity(
+                        request.getCategory()
+                )
+        );
+        ticket.setType(
+                mapper.mapTicketTypeToEntity(
+                        request.getType()
+                )
+        );
+
+        return mapper.mapToResponse(
+                ticketRepository.save(ticket)
+        );
     }
 
     private boolean isSameStatus(Ticket ticket, api.model.TicketStatus status) {
