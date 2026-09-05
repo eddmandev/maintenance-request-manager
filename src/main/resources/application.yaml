@@ -1,13 +1,14 @@
 spring:
   application:
-    name: Maintenance Request Manager
-
-spring:
+    name: Maintenance_request_manager
   datasource:
     url: jdbc:postgresql://localhost:5432/maintenance_db
     username: postgres
-    password: notapassword
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: true
+
+logging:
+  level:
+    org.springframework.security: DEBUG

@@ -1,9 +1,6 @@
 package wit.edu.inz.ticket.controller;
 
-import api.model.TicketCreateRequest;
-import api.model.TicketResponse;
-import api.model.TicketStatusUpdateRequest;
-import api.model.TicketUpdatePriorityRequest;
+import api.model.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import wit.edu.inz.ticket.service.TicketService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
@@ -38,6 +37,28 @@ public class TicketsController {
             @PathVariable Long id) {
 
         return ResponseEntity.ok(ticketService.getTicketDetails(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TicketResponse>> getTickets(
+            Authentication authentication) {
+
+        List<TicketResponse> tickets = ticketService.getTicketsForUser(
+                        authentication.getName());
+
+        return ResponseEntity.ok(tickets);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<TicketResponse> updateTicketDetails(
+            @PathVariable Long id,
+            @Valid @RequestBody TicketUpdateRequest request,
+            Authentication authentication) {
+
+        TicketResponse response = ticketService.editTicket(id, request,
+                authentication.getName());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/follow-up")
@@ -76,7 +97,6 @@ public class TicketsController {
     }
 
     @PatchMapping("/{id}/assign")
-    @PreAuthorize("hasRole('WORKER')")
     public ResponseEntity<TicketResponse> assignWorker(
             @PathVariable Long id,
             Authentication authentication) {

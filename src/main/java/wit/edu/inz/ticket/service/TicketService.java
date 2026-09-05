@@ -5,6 +5,8 @@ import wit.edu.inz.ticket.exception.SameTicketPriorityException;
 import wit.edu.inz.ticket.exception.SameTicketStatusException;
 import wit.edu.inz.ticket.exception.TicketNotFoundException;
 
+import java.util.List;
+
 public interface TicketService {
 
     TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest, String authenticationName);
@@ -13,6 +15,8 @@ public interface TicketService {
 
     TicketResponse getTicketDetails(long id) throws TicketNotFoundException;
 
+    List<TicketResponse> getTicketsForUser(String username);
+
     TicketResponse updateTicketPriority(TicketUpdatePriorityRequest ticketUpdatePriorityRequest, long id)
             throws TicketNotFoundException, SameTicketPriorityException;
 
@@ -20,5 +24,5 @@ public interface TicketService {
 
     TicketResponse assignWorker(Long ticketId, String username);
 
-    TicketResponse editTicket(Long ticketId, TicketUpdateRequest updateRequest, String username);
+    TicketResponse editTicket(Long ticketId, TicketUpdateRequest request, String username);
 }

@@ -1,10 +1,14 @@
 package wit.edu.inz.ticket.entity;
 
 public enum TicketType {
-    LEAK,
+    WATER_LEAK,
     CLOGGED_DRAIN,
-    LIGHT_FIXTURE,
+    HEATING_FAILURE,
     POWER_OUTAGE,
+    LIGHT_FIXTURE,
     BROKEN_WINDOW,
-    DOOR_REPAIR
+    BROKEN_DOOR,
+    APPLIANCE_REPAIR,
+    CLEANING_REQUEST,
+    OTHER
 }

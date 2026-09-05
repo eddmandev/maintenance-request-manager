@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import wit.edu.inz.attachment.service.AttachmentService;
+import wit.edu.inz.attachment.service.AttachmentServiceImpl;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttachmentController {
 
-    private final AttachmentService attachmentService;
+    private final AttachmentServiceImpl attachmentService;
 
     @PostMapping("/{ticketId}/attachments")
     public ResponseEntity<AttachmentResponse> uploadAttachment(

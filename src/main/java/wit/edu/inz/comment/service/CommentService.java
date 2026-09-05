@@ -10,5 +10,4 @@ public interface CommentService {
 
     CommentResponse createComment(Long ticketId,  CommentCreateRequest request);
 
-
 }

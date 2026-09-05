@@ -37,8 +37,7 @@ public class CommentServiceImpl implements CommentService{
                         new TicketNotFoundException(
                                 "Ticket with id '" +
                                         ticketId +
-                                        "' doesn't exist."
-                        ));
+                                        "' doesn't exist."));
 
         User author = getAuthenticatedUser();
 
@@ -49,18 +48,14 @@ public class CommentServiceImpl implements CommentService{
                 .build();
 
         return commentApiMapper.mapToResponse(
-                commentRepository.save(comment)
-        );
+                commentRepository.save(comment));
     }
 
     public List<CommentResponse> getTicketComments(Long ticketId) {
 
         if (!ticketRepository.existsById(ticketId)) {
             throw new TicketNotFoundException(
-                    "Ticket with id '" +
-                            ticketId +
-                            "' doesn't exist."
-            );
+                    "Ticket with id '" + ticketId + "' doesn't exist.");
         }
 
         return commentRepository
@@ -82,9 +77,8 @@ public class CommentServiceImpl implements CommentService{
         return userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UserNotFoundException(
-                                "Authenticated user '" +
-                                        username +
-                                        "' doesn't exist."
-                        ));
+                                "Authenticated user '"
+                                        + username
+                                        + "' doesn't exist."));
     }
 }

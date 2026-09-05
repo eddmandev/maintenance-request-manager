@@ -110,6 +110,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- J Meter -->
+		<dependency>
+			<groupId>com.github.hazendaz.jmeter</groupId>
+			<artifactId>apache-jmeter</artifactId>
+			<version>5.6.3</version>
+			<type>pom</type>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -2,15 +2,35 @@ openapi: 3.0.3
 info:
   title: Maintenance Request Manager
   version: 1.0.0
+tags:
+  - name: Authentication
+    description: User registration and authentication
 
+  - name: Profile
+    description: Operations related to the authenticated user's profile
+
+  - name: Ticket - User Operations
+    description: Ticket operations available to residents
+
+  - name: Ticket - Worker Operations
+    description: Ticket operations available to maintenance workers
+
+  - name: Comments
+    description: Operations related to ticket comments
+
+  - name: Attachments
+    description: Operations related to ticket attachments
+
+  - name: Administration
+    description: Administrative operations
 paths:
   /register:
     post:
-      security: []
       tags:
         - Authentication
       summary: Register a new user
       operationId: register
+      security: []
       requestBody:
         required: true
         content:
@@ -26,11 +46,11 @@ paths:
                 $ref: '#/components/schemas/AuthenticationResponse'
   /login:
     post:
-      security: []
       tags:
         - Authentication
       summary: Authenticate user
       operationId: login
+      security: []
       requestBody:
         required: true
         content:
@@ -48,10 +68,12 @@ paths:
           description: Invalid username or password
   /tickets:
     get:
-      operationId: getTickets
+      tags:
+        - Ticket - User Operations
       summary: Retrieve all tickets created by the authenticated user
+      operationId: getTickets
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: List of tickets
@@ -59,12 +81,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketListResponse'
-
     post:
-      operationId: createTicket
+      tags:
+        - Ticket - User Operations
       summary: Create a new ticket
+      operationId: createTicket
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -78,11 +101,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
-
   /tickets/{id}:
     get:
-      operationId: getTicket
+      tags:
+        - Ticket - User Operations
+        - Ticket - Worker Operations
       summary: Retrieve a single ticket
+      operationId: getTicket
       security:
         - bearerAuth: []
       parameters:
@@ -101,12 +126,13 @@ paths:
                 $ref: '#/components/schemas/TicketResponse'
         '404':
           description: Ticket not found
-
     patch:
-      summary: Update or close a ticket
+      tags:
+        - Ticket - User Operations
+      summary: Update ticket details
       operationId: updateTicket
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -127,13 +153,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
-
   /tickets/{id}/attachments:
     post:
-      operationId: createAttachment
+      tags:
+        - Attachments
       summary: Upload attachment to ticket
+      operationId: createAttachment
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -161,10 +188,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/AttachmentResponse'
     get:
-      operationId: getAttachments
+      tags:
+        - Attachments
       summary: Get attachments related to the ticket
+      operationId: getAttachments
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -181,13 +210,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AttachmentResponse'
-
   /tickets/attachments/{attachmentId}:
     get:
-      operationId: downloadAttachment
+      tags:
+        - Attachments
       summary: Download attachment
+      operationId: downloadAttachment
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: attachmentId
           in: path
@@ -203,13 +233,14 @@ paths:
               schema:
                 type: string
                 format: binary
-
   /tickets/{id}/comments:
     post:
-      operationId: createComment
+      tags:
+        - Comments
       summary: Add a comment to a ticket
+      operationId: createComment
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -236,12 +267,13 @@ paths:
           description: Authentication required
         '404':
           description: Ticket not found
-
     get:
-      operationId: getTicketComments
+      tags:
+        - Comments
       summary: Retrieve comments for a ticket
+      operationId: getTicketComments
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -262,11 +294,12 @@ paths:
           description: Authentication required
         '404':
           description: Ticket not found
-
   /tickets/{id}/status:
     patch:
-      operationId: updateTicketStatus
+      tags:
+        - Ticket - Worker Operations
       summary: Update the status of a ticket
+      operationId: updateTicketStatus
       security:
         - bearerAuth: []
       parameters:
@@ -293,13 +326,14 @@ paths:
           description: Invalid status provided
         '404':
           description: Ticket not found
-
   /tickets/{id}/priority:
     patch:
-      operationId: updateTicketPriority
+      tags:
+        - Ticket - Worker Operations
       summary: Update the priority of a ticket
+      operationId: updateTicketPriority
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -324,11 +358,12 @@ paths:
           description: Invalid priority provided
         '404':
           description: Ticket not found
-
   /tickets/{id}/assign:
     patch:
-      operationId: assignTicket
+      tags:
+        - Ticket - Worker Operations
       summary: Assign the ticket to a maintenance worker
+      operationId: assignTicket
       security:
         - bearerAuth: []
       parameters:
@@ -339,7 +374,7 @@ paths:
             type: integer
             format: int64
       responses:
-        200:
+        '200':
           description: Ticket response
           content:
             application/json:
@@ -349,6 +384,97 @@ paths:
           description: Invalid assignment
         '404':
           description: Ticket not found
+  /admin/users:
+    get:
+      tags:
+        - Administration
+      summary: Retrieve all users
+      operationId: getUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Administrator role required
+  /admin/tickets:
+    get:
+      tags:
+        - Administration
+      summary: Retrieve all tickets
+      operationId: getAdminTickets
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all tickets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketListResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Administrator role required
+  /admin/workers:
+    post:
+      tags:
+        - Administration
+      summary: Create a maintenance worker account
+      operationId: createWorker
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerCreateRequest'
+      responses:
+        '201':
+          description: Worker account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid worker data
+        '401':
+          description: Authentication required
+        '403':
+          description: Administrator role required
+        '409':
+          description: Username or email already exists
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Get authenticated user profile
+      description: >
+        Returns details of the currently authenticated user together with
+        their currently open maintenance tickets.
+      operationId: getProfile
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
 
 components:
   securitySchemes:
@@ -356,8 +482,60 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
+    ProfileResponse:
+      type: object
+      description: Details of the authenticated user and their open tickets
+      required:
+        - id
+        - username
+        - email
+        - role
+        - tickets
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 3
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Smith
+        username:
+          type: string
+          example: johnsmith
+        email:
+          type: string
+          format: email
+          example: john.smith@example.com
+        role:
+          $ref: '#/components/schemas/Role'
+        tickets:
+          type: array
+          description: Tickets created by the user that are not completed or cancelled
+          items:
+            $ref: '#/components/schemas/ProfileTicketResponse'
+    ProfileTicketResponse:
+      type: object
+      description: Lightweight ticket representation used on the profile page
+      required:
+        - id
+        - title
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 12
+
+        title:
+          type: string
+          example: Leaking pipe in bathroom
+
+        status:
+          $ref: '#/components/schemas/TicketStatus'
     AuthenticationRequest:
       type: object
       required:
@@ -371,7 +549,7 @@ components:
           type: string
           format: password
           example: myPassword123
-
+      description: Authentication request containing user credentials.
     RegisterRequest:
       type: object
       required:
@@ -410,14 +588,14 @@ components:
         apartmentNr:
           type: integer
           example: 7
-
+      description: Resident registration request.
     Role:
       type: string
       enum:
         - USER
         - WORKER
         - ADMIN
-
+      description: Application role assigned to a user.
     AuthenticationResponse:
       type: object
       required:
@@ -427,7 +605,7 @@ components:
           type: string
           description: JWT access token
           example: eyJhbGciOiJIUzI1NiJ9...
-
+      description: Authentication response containing the generated JWT access token.
     TicketCreateRequest:
       type: object
       required:
@@ -444,7 +622,7 @@ components:
           $ref: '#/components/schemas/TicketCategory'
         type:
           $ref: '#/components/schemas/TicketType'
-
+      description: Resident request for creating a maintenance ticket.
     TicketStatusUpdateRequest:
       type: object
       required:
@@ -452,7 +630,7 @@ components:
       properties:
         status:
           $ref: '#/components/schemas/TicketStatus'
-
+      description: Worker request for changing the status of a ticket.
     TicketUpdateRequest:
       type: object
       properties:
@@ -464,7 +642,7 @@ components:
           $ref: '#/components/schemas/TicketCategory'
         type:
           $ref: '#/components/schemas/TicketType'
-
+      description: Resident request for updating editable ticket details.
     TicketUpdatePriorityRequest:
       type: object
       required:
@@ -472,7 +650,7 @@ components:
       properties:
         priority:
           $ref: '#/components/schemas/TicketPriority'
-
+      description: Worker request for changing the priority of a ticket.
     TicketResponse:
       type: object
       required:
@@ -491,10 +669,10 @@ components:
           example: 1
         title:
           type: string
-          example: "Leaking pipe in bathroom"
+          example: Leaking pipe in bathroom
         description:
           type: string
-          example: "There is a constant leak underneath the bathroom sink."
+          example: There is a constant leak underneath the bathroom sink.
         category:
           $ref: '#/components/schemas/TicketCategory'
         type:
@@ -506,11 +684,11 @@ components:
         createdAt:
           type: string
           format: date-time
-          example: "2026-08-19T14:30:00"
+          example: '2026-08-19T14:30:00+02:00'
         updatedAt:
           type: string
           format: date-time
-          example: "2026-08-19T15:45:00"
+          example: '2026-08-19T15:45:00+02:00'
         completedAt:
           type: string
           format: date-time
@@ -525,7 +703,7 @@ components:
           format: int64
           nullable: true
           example: 12
-
+      description: Ticket information returned by ticket operations.
     TicketCategory:
       type: string
       enum:
@@ -536,7 +714,7 @@ components:
         - APPLIANCE
         - CLEANING
         - OTHER
-
+      description: Category assigned to a maintenance ticket.
     TicketType:
       type: string
       enum:
@@ -550,7 +728,7 @@ components:
         - APPLIANCE_REPAIR
         - CLEANING_REQUEST
         - OTHER
-
+      description: Type of maintenance issue reported by the resident.
     TicketStatus:
       type: string
       enum:
@@ -559,7 +737,7 @@ components:
         - IN_PROGRESS
         - COMPLETED
         - CANCELLED
-
+      description: Current lifecycle status of a maintenance ticket.
     TicketPriority:
       type: string
       enum:
@@ -567,12 +745,12 @@ components:
         - MEDIUM
         - HIGH
         - URGENT
-
+      description: Priority assigned to a maintenance ticket.
     TicketListResponse:
       type: array
       items:
         $ref: '#/components/schemas/TicketResponse'
-
+      description: List of maintenance tickets.
     AttachmentResponse:
       type: object
       required:
@@ -595,7 +773,7 @@ components:
         uploadedAt:
           type: string
           format: date-time
-
+      description: Metadata describing a file attached to a ticket.
     CommentCreateRequest:
       type: object
       required:
@@ -605,7 +783,7 @@ components:
           type: string
           description: Content of the comment
           example: The worker has been notified about the issue.
-
+      description: Request for adding a comment to a ticket.
     CommentResponse:
       type: object
       required:
@@ -632,7 +810,7 @@ components:
           format: int64
         authorUsername:
           type: string
-
+      description: Comment information returned by comment operations.
     WorkerCreateRequest:
       type: object
       required:
@@ -654,8 +832,31 @@ components:
         password:
           type: string
           format: password
-
+      description: Administrator request for creating a maintenance worker account.
+    UserResponse:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - username
+        - email
+        - role
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+      description: User information returned by administrative operations.
 security:
   - bearerAuth: []
-
-

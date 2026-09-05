@@ -10,6 +10,7 @@ import wit.edu.inz.ticket.entity.Ticket;
 import wit.edu.inz.ticket.entity.TicketPriority;
 import wit.edu.inz.ticket.entity.TicketStatus;
 import wit.edu.inz.ticket.exception.SameTicketPriorityException;
+import wit.edu.inz.ticket.exception.TicketNotEditableException;
 import wit.edu.inz.ticket.exception.TicketNotFoundException;
 import wit.edu.inz.ticket.exception.SameTicketStatusException;
 import wit.edu.inz.ticket.mapper.TicketApiMapper;
@@ -17,6 +18,7 @@ import wit.edu.inz.ticket.repository.TicketRepository;
 import wit.edu.inz.user.entity.User;
 import wit.edu.inz.user.repository.UserRepository;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -39,7 +41,6 @@ public class TicketServiceImpl implements TicketService {
 
         ticket.setCreatedBy(creator);
         ticket.setStatus(wit.edu.inz.ticket.entity.TicketStatus.OPEN);
-
         ticket.setPriority(calculatePriority(request.getType()));
 
         return mapper.mapToResponse(ticketRepository.save(ticket));
@@ -109,6 +110,15 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    public List<TicketResponse> getTicketsForUser(String username) {
+        return ticketRepository
+                .findAllByCreatedByUsername(username)
+                .stream()
+                .map(mapper::mapToResponse)
+                .toList();
+    }
+
+    @Override
     public TicketResponse updateTicketPriority(
             TicketUpdatePriorityRequest request,
             long id) {
@@ -163,6 +173,7 @@ public class TicketServiceImpl implements TicketService {
         return mapper.mapToResponse(updated);
     }
 
+    @Override
     public TicketResponse editTicket(
             Long ticketId,
             TicketUpdateRequest request,
@@ -174,6 +185,9 @@ public class TicketServiceImpl implements TicketService {
                                 "Ticket with id: '" + ticketId + "' doesn't exist"
                         )
                 );
+        if (ticket.getStatus().equals(TicketStatus.COMPLETED)){
+            throw new TicketNotEditableException("Unable to edit a completed ticket, create a new ticket.");
+        }
 
         if (!ticket.getCreatedBy().getUsername().equals(username)) {
             throw new AccessDeniedException(

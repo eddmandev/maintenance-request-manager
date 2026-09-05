@@ -5,6 +5,7 @@ import api.model.AuthenticationResponse;
 import api.model.RegisterRequest;
 import api.model.WorkerCreateRequest;
 import wit.edu.inz.authentication.jwt.JwtService;
+import wit.edu.inz.exception.UserAlreadyExistsException;
 import wit.edu.inz.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +30,14 @@ public class AuthenticationService {
 
     public AuthenticationResponse register(RegisterRequest request) {
 
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new UserAlreadyExistsException("Username already exists");
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("Email already exists");
+        }
+
         User user = userMapper.mapToEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
@@ -47,8 +56,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()
-                )
-        );
+                ));
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() ->
@@ -66,8 +74,7 @@ public class AuthenticationService {
 
         User worker = userMapper.mapWorkerToEntity(request);
 
-        worker.setPassword(
-                passwordEncoder.encode(request.getPassword()));
+        worker.setPassword(passwordEncoder.encode(request.getPassword()));
 
         worker.setRole(Role.WORKER);
         worker.setEnabled(true);
