@@ -32,11 +32,22 @@ public class TicketsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketResponse);
     }
 
+    @GetMapping("/unassigned")
+    @PreAuthorize("hasRole('WORKER')")
+    public ResponseEntity<List<TicketResponse>> getUnassignedTickets() {
+
+        return ResponseEntity.ok(
+                ticketService.getUnassignedTickets()
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TicketResponse> getTicketInfo(
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(ticketService.getTicketDetails(id));
+        return ResponseEntity.ok(
+                ticketService.getTicketDetails(id)
+        );
     }
 
     @GetMapping
@@ -44,7 +55,8 @@ public class TicketsController {
             Authentication authentication) {
 
         List<TicketResponse> tickets = ticketService.getTicketsForUser(
-                        authentication.getName());
+                authentication.getName()
+        );
 
         return ResponseEntity.ok(tickets);
     }
@@ -55,8 +67,11 @@ public class TicketsController {
             @Valid @RequestBody TicketUpdateRequest request,
             Authentication authentication) {
 
-        TicketResponse response = ticketService.editTicket(id, request,
-                authentication.getName());
+        TicketResponse response = ticketService.editTicket(
+                id,
+                request,
+                authentication.getName()
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -73,7 +88,9 @@ public class TicketsController {
                 authentication.getName()
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PatchMapping("/{id}/status")
@@ -102,7 +119,10 @@ public class TicketsController {
             Authentication authentication) {
 
         return ResponseEntity.ok(
-                ticketService.assignWorker(id, authentication.getName())
+                ticketService.assignWorker(
+                        id,
+                        authentication.getName()
+                )
         );
     }
 }

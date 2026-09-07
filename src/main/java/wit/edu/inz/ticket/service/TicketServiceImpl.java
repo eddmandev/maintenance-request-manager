@@ -213,6 +213,15 @@ public class TicketServiceImpl implements TicketService {
         );
     }
 
+    @Override
+    public List<TicketResponse> getUnassignedTickets() {
+        return ticketRepository
+                .findAllByAssignedWorkerIsNullAndStatus(TicketStatus.OPEN)
+                .stream()
+                .map(mapper::mapToResponse)
+                .toList();
+    }
+
     private boolean isSameStatus(Ticket ticket, api.model.TicketStatus status) {
         return ticket.getStatus().equals(mapper.mapTicketStatusToEntity(status));
     }

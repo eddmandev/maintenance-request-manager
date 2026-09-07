@@ -6,7 +6,6 @@ import api.model.WorkerCreateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import wit.edu.inz.exception.UserAlreadyExistsException;
 import wit.edu.inz.role.entity.Role;
 import wit.edu.inz.ticket.mapper.TicketApiMapper;
@@ -59,6 +58,8 @@ public class AdminServiceImpl implements AdminService {
 
         User worker = new User();
 
+        worker.setFirstName(request.getFirstName());
+        worker.setLastName(request.getLastName());
         worker.setUsername(request.getUsername());
         worker.setEmail(request.getEmail());
         worker.setPassword(
@@ -76,6 +77,8 @@ public class AdminServiceImpl implements AdminService {
         UserResponse response = new UserResponse();
 
         response.setId(user.getId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
 

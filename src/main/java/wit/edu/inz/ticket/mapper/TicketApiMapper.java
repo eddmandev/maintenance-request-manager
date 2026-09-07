@@ -10,7 +10,7 @@ import wit.edu.inz.ticket.entity.TicketCategory;
 import wit.edu.inz.ticket.entity.TicketPriority;
 import wit.edu.inz.ticket.entity.TicketStatus;
 import wit.edu.inz.ticket.entity.TicketType;
-import org.openapitools.jackson.nullable.JsonNullable;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -19,8 +19,7 @@ import java.time.ZoneOffset;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         imports = {
                 OffsetDateTime.class,
-                ZoneOffset.class,
-                JsonNullable.class
+                ZoneOffset.class
         }
 )
 public interface TicketApiMapper {
@@ -46,7 +45,7 @@ public interface TicketApiMapper {
     )
     @Mapping(
             target = "completedAt",
-            expression = "java(ticket.getCompletedAt() == null ? JsonNullable.undefined() : JsonNullable.of(ticket.getCompletedAt().atOffset(ZoneOffset.UTC)))"
+            expression = "java(ticket.getCompletedAt() == null ? null : ticket.getCompletedAt().atOffset(ZoneOffset.UTC))"
     )
     @Mapping(
             target = "createdById",
@@ -54,11 +53,9 @@ public interface TicketApiMapper {
     )
     @Mapping(
             target = "assignedWorkerId",
-            expression = "java(ticket.getAssignedWorker() == null ? JsonNullable.undefined() : JsonNullable.of(ticket.getAssignedWorker().getId()))"
+            expression = "java(ticket.getAssignedWorker() == null ? null : ticket.getAssignedWorker().getId())"
     )
     TicketResponse mapToResponse(Ticket ticket);
-
-    // HELPER MAPPINGS
 
     default api.model.TicketStatus mapTicketStatusToApi(TicketStatus status) {
         return status == null ? null : api.model.TicketStatus.valueOf(status.name());

@@ -25,4 +25,6 @@ public interface TicketService {
     TicketResponse assignWorker(Long ticketId, String username);
 
     TicketResponse editTicket(Long ticketId, TicketUpdateRequest request, String username);
+
+    List<TicketResponse> getUnassignedTickets();
 }
