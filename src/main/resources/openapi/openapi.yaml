@@ -153,6 +153,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+  /tickets/{id}/follow-up:
+    post:
+      tags:
+        - Ticket - User Operations
+      summary: Create a follow-up ticket
+      description: Creates a new ticket linked to the specified parent ticket.
+      operationId: createFollowUpTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifier of the parent ticket
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreateRequest'
+      responses:
+        '201':
+          description: Follow-up ticket created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketResponse'
+        '400':
+          description: Invalid follow-up ticket data
+        '401':
+          description: Authentication required
+        '403':
+          description: User is not allowed to create a follow-up for this ticket
+        '404':
+          description: Parent ticket not found
   /tickets/{id}/attachments:
     post:
       tags:
@@ -721,6 +759,10 @@ components:
         assignedWorkerId:
           type: integer
           format: int64
+        parentTicketId:
+          type: integer
+          format: int64
+          nullable: true
       description: Ticket information returned by ticket operations.
     TicketCategory:
       type: string
