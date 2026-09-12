@@ -543,6 +543,33 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-09-13T01:15:30.123+02:00"
+        status:
+          type: integer
+          format: int32
+          example: 403
+        error:
+          type: string
+          example: Forbidden
+        message:
+          type: string
+          example: You don't have permission to access this resource.
+        path:
+          type: string
+          example: /api/tickets/12
+      description: Standard error response returned by the application.
     ProfileResponse:
       type: object
       description: Details of the authenticated user and their open tickets
