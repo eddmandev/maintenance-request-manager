@@ -44,6 +44,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: Invalid registration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /login:
     post:
       tags:
@@ -66,6 +79,11 @@ paths:
                 $ref: '#/components/schemas/AuthenticationResponse'
         '401':
           description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets:
     get:
       tags:
@@ -81,6 +99,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketListResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     post:
       tags:
         - Ticket - User Operations
@@ -101,6 +126,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+        '400':
+          description: Invalid ticket data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}:
     get:
       tags:
@@ -124,8 +162,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access to the ticket is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     patch:
       tags:
         - Ticket - User Operations
@@ -153,6 +208,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketResponse'
+        '400':
+          description: Invalid ticket data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to modify this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/follow-up:
     post:
       tags:
@@ -185,12 +265,29 @@ paths:
                 $ref: '#/components/schemas/TicketResponse'
         '400':
           description: Invalid follow-up ticket data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: User is not allowed to create a follow-up for this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Parent ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/attachments:
     post:
       tags:
@@ -218,6 +315,7 @@ paths:
                 file:
                   type: string
                   format: binary
+                  description: JPEG, PNG or PDF file. Maximum size 10 MB.
       responses:
         '201':
           description: Attachment uploaded
@@ -225,6 +323,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttachmentResponse'
+        '400':
+          description: Invalid attachment file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to upload an attachment to this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     get:
       tags:
         - Attachments
@@ -248,6 +371,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AttachmentResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to access attachments for this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/attachments/{attachmentId}:
     get:
       tags:
@@ -271,6 +413,25 @@ paths:
               schema:
                 type: string
                 format: binary
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to download this attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Attachment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/comments:
     post:
       tags:
@@ -301,10 +462,29 @@ paths:
                 $ref: '#/components/schemas/CommentResponse'
         '400':
           description: Invalid comment data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to comment on this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     get:
       tags:
         - Comments
@@ -330,8 +510,23 @@ paths:
                   $ref: '#/components/schemas/CommentResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to access comments for this ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/status:
     patch:
       tags:
@@ -362,8 +557,29 @@ paths:
                 $ref: '#/components/schemas/TicketResponse'
         '400':
           description: Invalid status provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Worker role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/priority:
     patch:
       tags:
@@ -394,8 +610,29 @@ paths:
                 $ref: '#/components/schemas/TicketResponse'
         '400':
           description: Invalid priority provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Worker role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/{id}/assign:
     patch:
       tags:
@@ -420,8 +657,29 @@ paths:
                 $ref: '#/components/schemas/TicketResponse'
         '400':
           description: Invalid assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Worker role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /tickets/unassigned:
     get:
       tags:
@@ -430,7 +688,7 @@ paths:
       description: Returns all open tickets that are not assigned to a worker.
       operationId: getUnassignedTickets
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Unassigned tickets retrieved successfully
@@ -442,8 +700,17 @@ paths:
                   $ref: '#/components/schemas/TicketResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /admin/users:
     get:
       tags:
@@ -463,8 +730,17 @@ paths:
                   $ref: '#/components/schemas/UserResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /admin/tickets:
     get:
       tags:
@@ -482,8 +758,17 @@ paths:
                 $ref: '#/components/schemas/TicketListResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /admin/workers:
     post:
       tags:
@@ -507,12 +792,29 @@ paths:
                 $ref: '#/components/schemas/UserResponse'
         '400':
           description: Invalid worker data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /profile:
     get:
       tags:
@@ -523,7 +825,7 @@ paths:
         their currently open maintenance tickets.
       operationId: getProfile
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         '200':
           description: Profile retrieved successfully
@@ -533,8 +835,16 @@ paths:
                 $ref: '#/components/schemas/ProfileResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -616,11 +926,9 @@ components:
           type: integer
           format: int64
           example: 12
-
         title:
           type: string
           example: Leaking pipe in bathroom
-
         status:
           $ref: '#/components/schemas/TicketStatus'
     AuthenticationRequest:
