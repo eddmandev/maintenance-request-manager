@@ -3,7 +3,8 @@ spring:
     name: Maintenance_request_manager
   datasource:
     url: jdbc:postgresql://localhost:5432/maintenance_db
-    username: postgres
+    username: ${DB+USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -12,3 +13,8 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+
+app:
+  file-storage:
+    max-size=10485760:
+    path: uploads

@@ -63,8 +63,7 @@ public class AdminServiceImpl implements AdminService {
         worker.setUsername(request.getUsername());
         worker.setEmail(request.getEmail());
         worker.setPassword(
-                passwordEncoder.encode(request.getPassword())
-        );
+                passwordEncoder.encode(request.getPassword()));
         worker.setRole(Role.WORKER);
 
         User savedWorker = userRepository.save(worker);
@@ -81,7 +80,6 @@ public class AdminServiceImpl implements AdminService {
         response.setLastName(user.getLastName());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
-
         response.setRole(
                 api.model.Role.valueOf(
                         user.getRole().name()

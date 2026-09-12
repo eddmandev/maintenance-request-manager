@@ -1,9 +1,10 @@
 package wit.edu.inz.configuration;
 
-import wit.edu.inz.authentication.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import wit.edu.inz.authentication.jwt.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -33,23 +35,53 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS))
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(
                         jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(
+                                        HttpServletResponse.SC_UNAUTHORIZED
+                                )
+                        )
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(
+                                        HttpServletResponse.SC_FORBIDDEN
+                                )
+                        )
+                )
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/register", "/api/login")
+                        .requestMatchers(
+                                "/api/register",
+                                "/api/login"
+                        )
                         .permitAll()
+
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
+
                         .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/tickets/unassigned"
+                        )
+                        .hasRole("WORKER")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
                                 "/api/tickets/*/status",
                                 "/api/tickets/*/priority",
-                                "/api/tickets/*/assign")// troche hardkodowane ale szczerze mialem klopoty i tak bylo najszybciej
+                                "/api/tickets/*/assign"
+                        )
                         .hasRole("WORKER")
+
                         .anyRequest()
-                        .authenticated());
+                        .authenticated()
+                );
 
         return httpSecurity.build();
     }
@@ -61,7 +93,8 @@ public class WebSecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
