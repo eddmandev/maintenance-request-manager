@@ -11,13 +11,13 @@ public interface TicketService {
 
     TicketResponse createTicketFromRequest(TicketCreateRequest ticketRequest, String authenticationName);
 
-    TicketResponse updateTicketStatus(TicketStatusUpdateRequest ticketUpdateStatusRequest, long id) throws SameTicketStatusException;
+    TicketResponse updateTicketStatus(TicketStatusUpdateRequest ticketUpdateStatusRequest, long id, String username) throws SameTicketStatusException;
 
-    TicketResponse getTicketDetails(long id) throws TicketNotFoundException;
+    TicketResponse getTicketDetails(long id, String username) throws TicketNotFoundException;
 
     List<TicketResponse> getTicketsForUser(String username);
 
-    TicketResponse updateTicketPriority(TicketUpdatePriorityRequest ticketUpdatePriorityRequest, long id)
+    TicketResponse updateTicketPriority(TicketUpdatePriorityRequest ticketUpdatePriorityRequest, long id, String username)
             throws TicketNotFoundException, SameTicketPriorityException;
 
     TicketResponse createFollowUpTicket(Long ticketId, TicketCreateRequest request, String username);
@@ -26,5 +26,5 @@ public interface TicketService {
 
     TicketResponse editTicket(Long ticketId, TicketUpdateRequest request, String username);
 
-    List<TicketResponse> getUnassignedTickets();
+    List<TicketResponse> getUnassignedTickets(String username);
 }

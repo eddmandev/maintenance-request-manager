@@ -1,25 +1,24 @@
 package wit.edu.inz.ticket.service;
 
 import api.model.*;
-import org.springframework.security.access.AccessDeniedException;
-import wit.edu.inz.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import wit.edu.inz.exception.UserNotFoundException;
 import wit.edu.inz.role.entity.Role;
 import wit.edu.inz.ticket.entity.Ticket;
 import wit.edu.inz.ticket.entity.TicketPriority;
 import wit.edu.inz.ticket.entity.TicketStatus;
 import wit.edu.inz.ticket.exception.SameTicketPriorityException;
+import wit.edu.inz.ticket.exception.SameTicketStatusException;
 import wit.edu.inz.ticket.exception.TicketNotEditableException;
 import wit.edu.inz.ticket.exception.TicketNotFoundException;
-import wit.edu.inz.ticket.exception.SameTicketStatusException;
 import wit.edu.inz.ticket.mapper.TicketApiMapper;
 import wit.edu.inz.ticket.repository.TicketRepository;
 import wit.edu.inz.user.entity.User;
 import wit.edu.inz.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -33,17 +32,18 @@ public class TicketServiceImpl implements TicketService {
     public TicketResponse createTicketFromRequest(
             TicketCreateRequest request,
             String username) {
-        User creator = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException("User not found."));
+
+        User creator = getUser(username);
 
         Ticket ticket = mapper.mapToEntity(request);
 
         ticket.setCreatedBy(creator);
-        ticket.setStatus(wit.edu.inz.ticket.entity.TicketStatus.OPEN);
+        ticket.setStatus(TicketStatus.OPEN);
         ticket.setPriority(calculatePriority(request.getType()));
 
-        return mapper.mapToResponse(ticketRepository.save(ticket));
+        return mapper.mapToResponse(
+                ticketRepository.save(ticket)
+        );
     }
 
     @Override
@@ -51,36 +51,34 @@ public class TicketServiceImpl implements TicketService {
             Long ticketId,
             TicketCreateRequest request,
             String username) {
-        Ticket parentTicket = ticketRepository.findById(ticketId)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id " + ticketId + " was not found."));
 
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "User " + username + " was not found."));
+        Ticket parentTicket = getTicket(ticketId);
+        User currentUser = getUser(username);
+
+        validateOwnership(parentTicket, currentUser);
 
         Ticket followUp = mapper.mapToEntity(request);
 
         followUp.setCreatedBy(currentUser);
         followUp.setParentTicket(parentTicket);
         followUp.setStatus(TicketStatus.OPEN);
+        followUp.setPriority(calculatePriority(request.getType()));
 
-        Ticket savedTicket = ticketRepository.save(followUp);
-
-        return mapper.mapToResponse(savedTicket);
+        return mapper.mapToResponse(
+                ticketRepository.save(followUp)
+        );
     }
 
     @Override
     public TicketResponse updateTicketStatus(
             TicketStatusUpdateRequest request,
-            long id) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id '" + id + "' doesn't exist."
-                        ));
+            long id,
+            String username) {
+
+        Ticket ticket = getTicket(id);
+        User currentUser = getUser(username);
+
+        validateAssignedWorker(ticket, currentUser);
 
         TicketStatus newStatus =
                 mapper.mapTicketStatusToEntity(request.getStatus());
@@ -93,24 +91,35 @@ public class TicketServiceImpl implements TicketService {
 
         ticket.setStatus(newStatus);
 
-        Ticket updated = ticketRepository.save(ticket);
-
-        return mapper.mapToResponse(updated);
+        return mapper.mapToResponse(
+                ticketRepository.save(ticket)
+        );
     }
 
     @Override
-    public TicketResponse getTicketDetails(long id) throws TicketNotFoundException {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id '" + id + "' doesn't exist."
-                        ));
+    public TicketResponse getTicketDetails(
+            long id,
+            String username) {
+
+        Ticket ticket = getTicket(id);
+        User currentUser = getUser(username);
+
+        validateTicketAccess(ticket, currentUser);
 
         return mapper.mapToResponse(ticket);
     }
 
     @Override
     public List<TicketResponse> getTicketsForUser(String username) {
+
+        User currentUser = getUser(username);
+
+        if (currentUser.getRole() != Role.USER) {
+            throw new AccessDeniedException(
+                    "Only residents can access their personal ticket list."
+            );
+        }
+
         return ticketRepository
                 .findAllByCreatedByUsername(username)
                 .stream()
@@ -121,12 +130,13 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketResponse updateTicketPriority(
             TicketUpdatePriorityRequest request,
-            long id) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id '" + id + "' doesn't exist."
-                        ));
+            long id,
+            String username) {
+
+        Ticket ticket = getTicket(id);
+        User currentUser = getUser(username);
+
+        validateAssignedWorker(ticket, currentUser);
 
         TicketPriority newPriority =
                 mapper.mapTicketPriorityToEntity(request.getPriority());
@@ -136,72 +146,70 @@ public class TicketServiceImpl implements TicketService {
                     "Ticket already has priority " + newPriority + "."
             );
         }
-        ticket.setPriority(newPriority);
-        Ticket updated = ticketRepository.save(ticket);
 
-        return mapper.mapToResponse(updated);
+        ticket.setPriority(newPriority);
+
+        return mapper.mapToResponse(
+                ticketRepository.save(ticket)
+        );
     }
 
     @Override
     public TicketResponse assignWorker(
             Long ticketId,
             String username) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id '" + ticketId + "' doesn't exist."
-                        ));
 
-        User worker = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "User with username '" + username + "' doesn't exist."
-                        ));
+        Ticket ticket = getTicket(ticketId);
+        User worker = getUser(username);
 
-        if (worker.getRole() != Role.WORKER) {
-            throw new RuntimeException(
-                    "Only maintenance workers can be assigned to tickets."
+        validateWorker(worker);
+
+        if (ticket.getAssignedWorker() != null) {
+            throw new IllegalStateException(
+                    "Ticket is already assigned to a worker."
             );
         }
-        ticket.setAssignedWorker(worker);
 
-        if (ticket.getStatus() == TicketStatus.OPEN) {
-            ticket.setStatus(TicketStatus.ASSIGNED);
+        if (ticket.getStatus() != TicketStatus.OPEN) {
+            throw new IllegalStateException(
+                    "Only open tickets can be assigned."
+            );
         }
-        Ticket updated = ticketRepository.save(ticket);
 
-        return mapper.mapToResponse(updated);
+        ticket.setAssignedWorker(worker);
+        ticket.setStatus(TicketStatus.ASSIGNED);
+
+        return mapper.mapToResponse(
+                ticketRepository.save(ticket)
+        );
     }
 
     @Override
     public TicketResponse editTicket(
             Long ticketId,
             TicketUpdateRequest request,
-            String username
-    ) {
-        var ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() ->
-                        new TicketNotFoundException(
-                                "Ticket with id: '" + ticketId + "' doesn't exist"
-                        )
-                );
-        if (ticket.getStatus().equals(TicketStatus.COMPLETED)){
-            throw new TicketNotEditableException("Unable to edit a completed ticket, create a new ticket.");
-        }
+            String username) {
 
-        if (!ticket.getCreatedBy().getUsername().equals(username)) {
-            throw new AccessDeniedException(
-                    "You are not allowed to edit this ticket"
+        Ticket ticket = getTicket(ticketId);
+        User currentUser = getUser(username);
+
+        validateOwnership(ticket, currentUser);
+
+        if (ticket.getStatus() == TicketStatus.COMPLETED) {
+            throw new TicketNotEditableException(
+                    "Unable to edit a completed ticket, create a new ticket."
             );
         }
 
         ticket.setTitle(request.getTitle());
         ticket.setDescription(request.getDescription());
+
         ticket.setCategory(
                 mapper.mapTicketCategoryToEntity(
                         request.getCategory()
                 )
         );
+
         ticket.setType(
                 mapper.mapTicketTypeToEntity(
                         request.getType()
@@ -214,7 +222,13 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public List<TicketResponse> getUnassignedTickets() {
+    public List<TicketResponse> getUnassignedTickets(
+            String username) {
+
+        User currentUser = getUser(username);
+
+        validateWorker(currentUser);
+
         return ticketRepository
                 .findAllByAssignedWorkerIsNullAndStatus(TicketStatus.OPEN)
                 .stream()
@@ -222,34 +236,117 @@ public class TicketServiceImpl implements TicketService {
                 .toList();
     }
 
-    private boolean isSameStatus(Ticket ticket, api.model.TicketStatus status) {
-        return ticket.getStatus().equals(mapper.mapTicketStatusToEntity(status));
+    private Ticket getTicket(Long ticketId) {
+        return ticketRepository.findById(ticketId)
+                .orElseThrow(() ->
+                        new TicketNotFoundException(
+                                "Ticket with id '" + ticketId + "' doesn't exist."
+                        )
+                );
     }
 
-    private boolean isSamePriority(Ticket ticket, api.model.TicketPriority priority) {
-        return ticket.getPriority().equals(mapper.mapTicketPriorityToEntity(priority));
+    private User getUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User with username '" + username + "' doesn't exist."
+                        )
+                );
     }
 
-    private boolean isTicketAssigned(Ticket ticket){
-        return !Objects.isNull(ticket.getAssignedWorker());
+    private void validateTicketAccess(
+            Ticket ticket,
+            User currentUser) {
+
+        if (currentUser.getRole() == Role.ADMIN) {
+            return;
+        }
+
+        if (currentUser.getRole() == Role.USER) {
+            validateOwnership(ticket, currentUser);
+            return;
+        }
+
+        if (currentUser.getRole() == Role.WORKER) {
+            boolean assignedToCurrentWorker =
+                    ticket.getAssignedWorker() != null
+                            && ticket.getAssignedWorker()
+                            .getId()
+                            .equals(currentUser.getId());
+
+            boolean openAndUnassigned =
+                    ticket.getAssignedWorker() == null
+                            && ticket.getStatus() == TicketStatus.OPEN;
+
+            if (assignedToCurrentWorker || openAndUnassigned) {
+                return;
+            }
+        }
+
+        throw new AccessDeniedException(
+                "You are not allowed to access this ticket."
+        );
     }
 
-    private wit.edu.inz.ticket.entity.TicketPriority calculatePriority(TicketType type) {
+    private void validateOwnership(
+            Ticket ticket,
+            User currentUser) {
 
+        if (!ticket.getCreatedBy()
+                .getId()
+                .equals(currentUser.getId())) {
+
+            throw new AccessDeniedException(
+                    "You are not allowed to access this ticket."
+            );
+        }
+    }
+
+    private void validateAssignedWorker(
+            Ticket ticket,
+            User currentUser) {
+
+        validateWorker(currentUser);
+
+        if (ticket.getAssignedWorker() == null) {
+            throw new AccessDeniedException(
+                    "Ticket is not assigned to a worker."
+            );
+        }
+
+        if (!ticket.getAssignedWorker()
+                .getId()
+                .equals(currentUser.getId())) {
+
+            throw new AccessDeniedException(
+                    "Ticket is assigned to another worker."
+            );
+        }
+    }
+
+    private void validateWorker(User user) {
+        if (user.getRole() != Role.WORKER) {
+            throw new AccessDeniedException(
+                    "Only maintenance workers can perform this operation."
+            );
+        }
+    }
+
+    private TicketPriority calculatePriority(TicketType type) {
         return switch (type) {
 
             case POWER_OUTAGE,
                  WATER_LEAK,
-                 HEATING_FAILURE -> wit.edu.inz.ticket.entity.TicketPriority.URGENT;
+                 HEATING_FAILURE -> TicketPriority.URGENT;
 
             case BROKEN_DOOR,
                  BROKEN_WINDOW,
-                 APPLIANCE_REPAIR -> wit.edu.inz.ticket.entity.TicketPriority.HIGH;
+                 APPLIANCE_REPAIR -> TicketPriority.HIGH;
 
             case LIGHT_FIXTURE,
-                 CLOGGED_DRAIN -> wit.edu.inz.ticket.entity.TicketPriority.MEDIUM;
+                 CLOGGED_DRAIN -> TicketPriority.MEDIUM;
 
-            default -> wit.edu.inz.ticket.entity.TicketPriority.LOW;
+            default -> TicketPriority.LOW;
         };
     }
 }

@@ -18,3 +18,5 @@ app:
   file-storage:
     max-size=10485760:
     path: uploads
+
+api-secrets: TWOJ_SEKRET_BASE64

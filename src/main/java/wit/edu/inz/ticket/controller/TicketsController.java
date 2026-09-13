@@ -34,19 +34,21 @@ public class TicketsController {
 
     @GetMapping("/unassigned")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<List<TicketResponse>> getUnassignedTickets() {
+    public ResponseEntity<List<TicketResponse>> getUnassignedTickets(
+            Authentication authentication) {
 
         return ResponseEntity.ok(
-                ticketService.getUnassignedTickets()
+                ticketService.getUnassignedTickets(
+                        authentication.getName()
+                )
         );
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<TicketResponse> getTicketInfo(
-            @PathVariable Long id) {
+            @PathVariable Long id, Authentication authentication) {
 
         return ResponseEntity.ok(
-                ticketService.getTicketDetails(id)
+                ticketService.getTicketDetails(id, authentication.getName())
         );
     }
 
@@ -96,20 +98,20 @@ public class TicketsController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<TicketResponse> updateTicketStatus(
             @PathVariable Long id,
-            @RequestBody @Valid TicketStatusUpdateRequest request) {
+            @RequestBody @Valid TicketStatusUpdateRequest request, Authentication authentication) {
 
         return ResponseEntity.ok(
-                ticketService.updateTicketStatus(request, id)
+                ticketService.updateTicketStatus(request, id, authentication.getName())
         );
     }
 
     @PatchMapping("/{id}/priority")
     public ResponseEntity<TicketResponse> updateTicketPriority(
             @PathVariable Long id,
-            @RequestBody @Valid TicketUpdatePriorityRequest request) {
+            @RequestBody @Valid TicketUpdatePriorityRequest request, Authentication authentication) {
 
         return ResponseEntity.ok(
-                ticketService.updateTicketPriority(request, id)
+                ticketService.updateTicketPriority(request, id, authentication.getName())
         );
     }
 
