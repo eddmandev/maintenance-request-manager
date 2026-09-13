@@ -397,7 +397,7 @@ paths:
       summary: Download attachment
       operationId: downloadAttachment
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - name: attachmentId
           in: path
@@ -421,6 +421,41 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: User is not allowed to download this attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Attachment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Attachments
+      summary: Delete attachment
+      operationId: deleteAttachment
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Attachment deleted successfully
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to delete this attachment
           content:
             application/json:
               schema:
