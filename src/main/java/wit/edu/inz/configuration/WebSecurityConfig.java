@@ -30,7 +30,9 @@ public class WebSecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity)
+            throws Exception {
+
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
@@ -44,15 +46,17 @@ public class WebSecurityConfig {
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(
-                                        HttpServletResponse.SC_UNAUTHORIZED
-                                )
+                        .authenticationEntryPoint(
+                                (request, response, authException) ->
+                                        response.sendError(
+                                                HttpServletResponse.SC_UNAUTHORIZED
+                                        )
                         )
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                response.sendError(
-                                        HttpServletResponse.SC_FORBIDDEN
-                                )
+                        .accessDeniedHandler(
+                                (request, response, accessDeniedException) ->
+                                        response.sendError(
+                                                HttpServletResponse.SC_FORBIDDEN
+                                        )
                         )
                 )
                 .authorizeHttpRequests(request -> request
@@ -61,16 +65,29 @@ public class WebSecurityConfig {
                                 "/api/login"
                         )
                         .permitAll()
-
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
-
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/tickets",
+                                "/api/tickets/*/follow-up"
+                        )
+                        .hasRole("USER")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/tickets"
+                        )
+                        .hasRole("USER")
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/tickets/unassigned"
                         )
                         .hasRole("WORKER")
-
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/tickets/*"
+                        )
+                        .hasRole("USER")
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/tickets/*/status",
@@ -78,13 +95,17 @@ public class WebSecurityConfig {
                                 "/api/tickets/*/assign"
                         )
                         .hasRole("WORKER")
-
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/tickets/*"
+                        )
+                        .hasAnyRole("USER", "WORKER", "ADMIN")
                         .anyRequest()
                         .authenticated()
                 );
-
         return httpSecurity.build();
     }
+
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

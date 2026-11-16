@@ -194,10 +194,11 @@ public class TicketServiceImpl implements TicketService {
         User currentUser = getUser(username);
 
         validateOwnership(ticket, currentUser);
+        TicketStatus ticketStatus = ticket.getStatus();
 
-        if (ticket.getStatus() == TicketStatus.COMPLETED) {
+        if (ticketStatus != TicketStatus.ASSIGNED && ticketStatus != TicketStatus.OPEN) {
             throw new TicketNotEditableException(
-                    "Unable to edit a completed ticket, create a new ticket."
+                    "Ticket can only be edited when its status is OPEN or ASSIGNED."
             );
         }
 
@@ -254,37 +255,33 @@ public class TicketServiceImpl implements TicketService {
                 );
     }
 
-    private void validateTicketAccess(
-            Ticket ticket,
-            User currentUser) {
-
-        if (currentUser.getRole() == Role.ADMIN) {
+    private void validateTicketAccess(Ticket ticket, User currentUser) {
+        Role role = currentUser.getRole();
+        if (role == Role.ADMIN) {
             return;
         }
 
-        if (currentUser.getRole() == Role.USER) {
-            validateOwnership(ticket, currentUser);
-            return;
+        if (role == Role.USER) {
+            if (ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+                return;
+            }
         }
 
-        if (currentUser.getRole() == Role.WORKER) {
+        if (role == Role.WORKER) {
             boolean assignedToCurrentWorker =
-                    ticket.getAssignedWorker() != null
-                            && ticket.getAssignedWorker()
-                            .getId()
-                            .equals(currentUser.getId());
+                    ticket.getAssignedWorker() != null &&
+                            ticket.getAssignedWorker().getId().equals(currentUser.getId());
+            boolean availableForAssignment =
+                    ticket.getStatus() == TicketStatus.OPEN &&
+                            ticket.getAssignedWorker() == null;
 
-            boolean openAndUnassigned =
-                    ticket.getAssignedWorker() == null
-                            && ticket.getStatus() == TicketStatus.OPEN;
-
-            if (assignedToCurrentWorker || openAndUnassigned) {
+            if (assignedToCurrentWorker || availableForAssignment) {
                 return;
             }
         }
 
         throw new AccessDeniedException(
-                "You are not allowed to access this ticket."
+                "You do not have permission to view this ticket."
         );
     }
 
@@ -334,7 +331,6 @@ public class TicketServiceImpl implements TicketService {
 
     private TicketPriority calculatePriority(TicketType type) {
         return switch (type) {
-
             case POWER_OUTAGE,
                  WATER_LEAK,
                  HEATING_FAILURE -> TicketPriority.URGENT;
