@@ -9,10 +9,7 @@ import wit.edu.inz.role.entity.Role;
 import wit.edu.inz.ticket.entity.Ticket;
 import wit.edu.inz.ticket.entity.TicketPriority;
 import wit.edu.inz.ticket.entity.TicketStatus;
-import wit.edu.inz.ticket.exception.SameTicketPriorityException;
-import wit.edu.inz.ticket.exception.SameTicketStatusException;
-import wit.edu.inz.ticket.exception.TicketNotEditableException;
-import wit.edu.inz.ticket.exception.TicketNotFoundException;
+import wit.edu.inz.ticket.exception.*;
 import wit.edu.inz.ticket.mapper.TicketApiMapper;
 import wit.edu.inz.ticket.repository.TicketRepository;
 import wit.edu.inz.user.entity.User;
@@ -32,6 +29,8 @@ public class TicketServiceImpl implements TicketService {
     public TicketResponse createTicketFromRequest(
             TicketCreateRequest request,
             String username) {
+
+        validateTicketTitle(request.getTitle());
 
         User creator = getUser(username);
 
@@ -56,6 +55,7 @@ public class TicketServiceImpl implements TicketService {
         User currentUser = getUser(username);
 
         validateOwnership(parentTicket, currentUser);
+        validateTicketTitle(request.getTitle());
 
         Ticket followUp = mapper.mapToEntity(request);
 
@@ -194,13 +194,17 @@ public class TicketServiceImpl implements TicketService {
         User currentUser = getUser(username);
 
         validateOwnership(ticket, currentUser);
+
         TicketStatus ticketStatus = ticket.getStatus();
 
-        if (ticketStatus != TicketStatus.ASSIGNED && ticketStatus != TicketStatus.OPEN) {
+        if (ticketStatus != TicketStatus.ASSIGNED
+                && ticketStatus != TicketStatus.OPEN) {
             throw new TicketNotEditableException(
                     "Ticket can only be edited when its status is OPEN or ASSIGNED."
             );
         }
+
+        validateTicketTitle(request.getTitle());
 
         ticket.setTitle(request.getTitle());
         ticket.setDescription(request.getDescription());
@@ -325,6 +329,14 @@ public class TicketServiceImpl implements TicketService {
         if (user.getRole() != Role.WORKER) {
             throw new AccessDeniedException(
                     "Only maintenance workers can perform this operation."
+            );
+        }
+    }
+
+    private void validateTicketTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new TicketInfoNotProvidedException(
+                    "Ticket title cannot be null, empty or blank."
             );
         }
     }

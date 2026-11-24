@@ -1,3 +1,4 @@
+
 package wit.edu.inz.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import wit.edu.inz.ticket.exception.SameTicketPriorityException;
 import wit.edu.inz.ticket.exception.SameTicketStatusException;
+import wit.edu.inz.ticket.exception.TicketInfoNotProvidedException;
 import wit.edu.inz.ticket.exception.TicketNotFoundException;
 
 import java.time.LocalDateTime;
@@ -81,6 +83,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             SameTicketStatusException.class,
             SameTicketPriorityException.class,
+            TicketInfoNotProvidedException.class,
             IllegalArgumentException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(
@@ -134,26 +137,11 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(
-            Exception ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.builder()
-                        .timestamp(LocalDateTime.now())
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                        .message(ex.getMessage())
-                        .path(request.getRequestURI())
-                        .build());
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(
             ResourceNotFoundException ex,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
+
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
@@ -162,8 +150,7 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(response);
     }
 
@@ -180,8 +167,22 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.PAYLOAD_TOO_LARGE)
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .body(error);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(
+            Exception ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                        .message("An unexpected error occurred.")
+                        .path(request.getRequestURI())
+                        .build());
     }
 }
